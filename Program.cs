@@ -19,11 +19,13 @@ public class MainWindow : Form
 {
     private readonly Label batteryLabel;
     private readonly Label statusLabel;
+    private readonly Label connectionLabel;
+    private readonly System.Windows.Forms.Timer refreshTimer;
 
     public MainWindow()
     {
         Text = "RAZER BLACKSHARK CONTROL";
-        Size = new Size(520, 380);
+        Size = new Size(520, 400);
         StartPosition = FormStartPosition.CenterScreen;
         BackColor = Color.FromArgb(12, 14, 12);
         ForeColor = Color.White;
@@ -59,11 +61,20 @@ public class MainWindow : Form
 
         statusLabel = new Label
         {
-            Text = "PIL BİLGİSİ BEKLENİYOR",
+            Text = "PİL BİLGİSİ BEKLENİYOR",
             Font = new Font("Segoe UI", 10, FontStyle.Bold),
             ForeColor = Color.Gray,
             AutoSize = true,
             Location = new Point(145, 235)
+        };
+
+        connectionLabel = new Label
+        {
+            Text = "USB CİHAZI KONTROL EDİLİYOR...",
+            Font = new Font("Segoe UI", 10, FontStyle.Bold),
+            ForeColor = Color.Gray,
+            AutoSize = true,
+            Location = new Point(125, 270)
         };
 
         var deviceLabel = new Label
@@ -72,13 +83,37 @@ public class MainWindow : Form
             Font = new Font("Consolas", 10),
             ForeColor = Color.LightGray,
             AutoSize = true,
-            Location = new Point(35, 295)
+            Location = new Point(35, 330)
         };
 
         Controls.Add(title);
         Controls.Add(subtitle);
         Controls.Add(batteryLabel);
         Controls.Add(statusLabel);
+        Controls.Add(connectionLabel);
         Controls.Add(deviceLabel);
+
+        refreshTimer = new System.Windows.Forms.Timer
+        {
+            Interval = 3000
+        };
+
+        refreshTimer.Tick += (_, _) => RefreshDevice();
+        refreshTimer.Start();
+
+        RefreshDevice();
+    }
+
+    private void RefreshDevice()
+    {
+        bool connected = DeviceDetector.IsHeadsetConnected();
+
+        connectionLabel.Text = connected
+            ? "● KULAKLIK ALICISI BAĞLI"
+            : "● KULAKLIK ALICISI BULUNAMADI";
+
+        connectionLabel.ForeColor = connected
+            ? Color.FromArgb(68, 255, 68)
+            : Color.OrangeRed;
     }
 }
