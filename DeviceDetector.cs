@@ -1,8 +1,8 @@
 
 using System;
-using System.Collections.Generic;
 using System.Management;
 using System.Text;
+using HidSharp;
 
 namespace RazerBattery;
 
@@ -12,21 +12,14 @@ public static class DeviceDetector
     {
         try
         {
-            using var searcher = new ManagementObjectSearcher(
-                "SELECT * FROM Win32_PnPEntity");
-
-            foreach (ManagementObject device in searcher.Get())
+            foreach (var device in
+                DeviceList.Local.GetHidDevices(0x1532, 0x0A41))
             {
-                string id = device["DeviceID"]?.ToString() ?? "";
-
-                if (id.Contains("VID_1532&PID_0A41",
-                    StringComparison.OrdinalIgnoreCase))
-                    return true;
+                return true;
             }
         }
         catch
         {
-            return false;
         }
 
         return false;
@@ -38,31 +31,39 @@ public static class DeviceDetector
 
         try
         {
-            using var searcher = new ManagementObjectSearcher(
-                "SELECT * FROM Win32_PnPEntity");
+            var devices = DeviceList.Local.GetHidDevices(0x1532);
 
-            foreach (ManagementObject device in searcher.Get())
+            foreach (var device in devices)
             {
-                string id = device["DeviceID"]?.ToString() ?? "";
+                report.AppendLine("VENDOR: " +
+                    device.VendorID.ToString("X4"));
 
-                if (id.Contains("VID_1532",
-                    StringComparison.OrdinalIgnoreCase))
-                {
-                    report.AppendLine("NAME: " + device["Name"]);
-                    report.AppendLine("CLASS: " + device["PNPClass"]);
-                    report.AppendLine("STATUS: " + device["Status"]);
-                    report.AppendLine("DEVICE ID: " + id);
-                    report.AppendLine("------------------------------");
-                }
+                report.AppendLine("PRODUCT: " +
+                    device.ProductID.ToString("X4"));
+
+                report.AppendLine("PATH: " +
+                    device.DevicePath);
+
+                report.AppendLine("INPUT LENGTH: " +
+                    device.MaxInputReportLength);
+
+                report.AppendLine("OUTPUT LENGTH: " +
+                    device.MaxOutputReportLength);
+
+                report.AppendLine("FEATURE LENGTH: " +
+                    device.MaxFeatureReportLength);
+
+                report.AppendLine("--------------------------------");
             }
+
+            if (report.Length == 0)
+                return "No Razer HID devices found.";
         }
         catch (Exception ex)
         {
             return "HID ERROR: " + ex.Message;
         }
 
-        return report.Length > 0
-            ? report.ToString()
-            : "Razer cihazı bulunamadı.";
+        return report.ToString();
     }
 }
