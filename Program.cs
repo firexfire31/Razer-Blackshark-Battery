@@ -135,7 +135,7 @@ public class MainWindow : Form
 
     private void RefreshDevice()
     {
-        bool connected = DeviceDetector.IsHeadsetConnected();
+        bool connected = DeviceDetector.IsRazerDeviceConnected();
 
         connectionLabel.Text = connected
             ? "● KULAKLIK ALICISI BAĞLI"
