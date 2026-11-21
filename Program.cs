@@ -25,7 +25,7 @@ public class MainWindow : Form
     public MainWindow()
     {
         Text = "RAZER BLACKSHARK CONTROL";
-        Size = new Size(520, 400);
+        Size = new Size(520, 450);
         StartPosition = FormStartPosition.CenterScreen;
         BackColor = Color.FromArgb(12, 14, 12);
         ForeColor = Color.White;
@@ -77,13 +77,41 @@ public class MainWindow : Form
             Location = new Point(125, 270)
         };
 
+        var diagnosticsButton = new Button
+        {
+            Text = "SİSTEM TANILAMASI",
+            Location = new Point(145, 315),
+            Size = new Size(220, 42),
+            BackColor = Color.FromArgb(25, 45, 25),
+            ForeColor = Color.FromArgb(68, 255, 68),
+            Font = new Font("Segoe UI", 10, FontStyle.Bold),
+            FlatStyle = FlatStyle.Flat,
+            Cursor = Cursors.Hand
+        };
+
+        diagnosticsButton.FlatAppearance.BorderColor =
+            Color.FromArgb(68, 255, 68);
+
+        diagnosticsButton.Click += (_, _) =>
+        {
+            string report = BatteryDiagnostics.GetReport();
+
+            MessageBox.Show(
+                this,
+                report,
+                "RAZER SYSTEM DIAGNOSTICS",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+        };
+
         var deviceLabel = new Label
         {
             Text = "USB DEVICE: 1532:0A41",
             Font = new Font("Consolas", 10),
             ForeColor = Color.LightGray,
             AutoSize = true,
-            Location = new Point(35, 330)
+            Location = new Point(35, 380)
         };
 
         Controls.Add(title);
@@ -91,6 +119,7 @@ public class MainWindow : Form
         Controls.Add(batteryLabel);
         Controls.Add(statusLabel);
         Controls.Add(connectionLabel);
+        Controls.Add(diagnosticsButton);
         Controls.Add(deviceLabel);
 
         refreshTimer = new System.Windows.Forms.Timer
