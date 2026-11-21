@@ -8,23 +8,32 @@ namespace RazerBattery;
 
 public static class DeviceDetector
 {
+    // USB bağlantısını Windows üzerinden kontrol et.
     public static bool IsRazerDeviceConnected()
     {
         try
         {
-            foreach (var device in
-                DeviceList.Local.GetHidDevices(0x1532, 0x0A41))
+            using var searcher = new ManagementObjectSearcher(
+                "SELECT * FROM Win32_PnPEntity");
+
+            foreach (ManagementObject device in searcher.Get())
             {
-                return true;
+                string id = device["DeviceID"]?.ToString() ?? "";
+
+                if (id.Contains("VID_1532&PID_0A41",
+                    StringComparison.OrdinalIgnoreCase))
+                    return true;
             }
         }
         catch
         {
+            return false;
         }
 
         return false;
     }
 
+    // HID arayüzlerini ayrıca listele.
     public static string GetRazerHidDevices()
     {
         var report = new StringBuilder();
@@ -53,7 +62,7 @@ public static class DeviceDetector
                 report.AppendLine("FEATURE LENGTH: " +
                     device.MaxFeatureReportLength);
 
-                report.AppendLine("--------------------------------");
+                report.AppendLine("-----------------------------");
             }
 
             if (report.Length == 0)
