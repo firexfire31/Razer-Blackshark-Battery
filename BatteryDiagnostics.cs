@@ -57,19 +57,9 @@ public static class BatteryDiagnostics
 
         try
         {
-            var hidDevices = DeviceDetector.GetRazerHidDevices();
+            string hidDevices = DeviceDetector.GetRazerHidDevices();
 
-            if (hidDevices.Count == 0)
-            {
-                report.AppendLine("No Razer HID interfaces found.");
-            }
-            else
-            {
-                foreach (var device in hidDevices)
-                {
-                    report.AppendLine("HID PATH: " + device);
-                }
-            }
+            report.AppendLine(hidDevices);
         }
         catch (Exception ex)
         {
@@ -109,6 +99,7 @@ public static class BatteryDiagnostics
         report.AppendLine();
         report.AppendLine("=== BATTERY STATUS ===");
         report.AppendLine("DEVICE: Razer BlackShark V2 Pro Xbox 2.4");
+        report.AppendLine("USB ID: 1532:0A41");
         report.AppendLine("BATTERY: Not yet detected");
         report.AppendLine("No estimated percentage is displayed.");
 
