@@ -16,7 +16,8 @@ public static class BatteryDiagnostics
         report.AppendLine("RAZER BATTERY DIAGNOSTICS");
         report.AppendLine("========================");
 
-        // USB DEVICE DETECTION
+        report.AppendLine("=== USB DEVICE DETECTION ===");
+
         try
         {
             using var searcher = new ManagementObjectSearcher(
@@ -25,14 +26,21 @@ public static class BatteryDiagnostics
             var devices = searcher.Get()
                 .Cast<ManagementObject>()
                 .Where(d =>
-                    (d["DeviceID"]?.ToString() ?? "")
-                    .Contains("VID_1532&PID_0A41",
-                        StringComparison.OrdinalIgnoreCase));
+                {
+                    string id = d["DeviceID"]?.ToString() ?? "";
+
+                    return id.Contains("VID_1532&PID_0A41",
+                               StringComparison.OrdinalIgnoreCase) ||
+                           id.Contains("VID_1532&PID_0A49",
+                               StringComparison.OrdinalIgnoreCase);
+                });
 
             foreach (var device in devices)
             {
                 report.AppendLine("DEVICE: " + device["Name"]);
                 report.AppendLine("STATUS: " + device["Status"]);
+                report.AppendLine("ID: " + device["DeviceID"]);
+                report.AppendLine();
             }
         }
         catch (Exception ex)
@@ -40,7 +48,8 @@ public static class BatteryDiagnostics
             report.AppendLine("USB ERROR: " + ex.Message);
         }
 
-        // GAMEINPUT SERVICE
+        report.AppendLine("=== GAMEINPUT SERVICE ===");
+
         try
         {
             using var service = new ServiceController("GameInputSvc");
@@ -51,57 +60,25 @@ public static class BatteryDiagnostics
             report.AppendLine("GAMEINPUT ERROR: " + ex.Message);
         }
 
-        // RAZER HID DEVICES
         report.AppendLine();
         report.AppendLine("=== RAZER HID DEVICES ===");
 
         try
         {
-            string hidDevices = DeviceDetector.GetRazerHidDevices();
-
-            report.AppendLine(hidDevices);
+            report.AppendLine(DeviceDetector.GetRazerHidDevices());
         }
         catch (Exception ex)
         {
             report.AppendLine("HID ERROR: " + ex.Message);
         }
 
-        // ALL RAZER USB INTERFACES
-        report.AppendLine();
-        report.AppendLine("=== ALL RAZER USB INTERFACES ===");
-
-        try
-        {
-            using var searcher = new ManagementObjectSearcher(
-                "SELECT * FROM Win32_PnPEntity");
-
-            foreach (ManagementObject device in searcher.Get())
-            {
-                string id = device["DeviceID"]?.ToString() ?? "";
-
-                if (id.Contains("VID_1532",
-                    StringComparison.OrdinalIgnoreCase))
-                {
-                    report.AppendLine("Name: " + device["Name"]);
-                    report.AppendLine("Class: " + device["PNPClass"]);
-                    report.AppendLine("Status: " + device["Status"]);
-                    report.AppendLine("ID: " + id);
-                    report.AppendLine();
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            report.AppendLine("USB ERROR: " + ex.Message);
-        }
-
-        // BATTERY STATUS
         report.AppendLine();
         report.AppendLine("=== BATTERY STATUS ===");
-        report.AppendLine("DEVICE: Razer BlackShark V2 Pro Xbox 2.4");
-        report.AppendLine("USB ID: 1532:0A41");
-        report.AppendLine("BATTERY: Not yet detected");
-        report.AppendLine("No estimated percentage is displayed.");
+        report.AppendLine("DEVICE: Razer BlackShark V2 Pro Xbox");
+        report.AppendLine("SUPPORTED USB IDS: 1532:0A41 / 1532:0A49");
+        report.AppendLine("BATTERY: Not yet queried");
+        report.AppendLine("REAL BATTERY READING: Pending HID protocol test");
+        report.AppendLine("NO ESTIMATED PERCENTAGE IS DISPLAYED.");
 
         return report.ToString();
     }
