@@ -16,6 +16,7 @@ public static class BatteryDiagnostics
         report.AppendLine("RAZER BATTERY DIAGNOSTICS");
         report.AppendLine("========================");
 
+        // USB DEVICE DETECTION
         try
         {
             using var searcher = new ManagementObjectSearcher(
@@ -39,6 +40,7 @@ public static class BatteryDiagnostics
             report.AppendLine("USB ERROR: " + ex.Message);
         }
 
+        // GAMEINPUT SERVICE
         try
         {
             using var service = new ServiceController("GameInputSvc");
@@ -49,10 +51,32 @@ public static class BatteryDiagnostics
             report.AppendLine("GAMEINPUT ERROR: " + ex.Message);
         }
 
+        // RAZER HID DEVICES
         report.AppendLine();
         report.AppendLine("=== RAZER HID DEVICES ===");
-        report.AppendLine(DeviceDetector.GetRazerHidDevices());
 
+        try
+        {
+            var hidDevices = DeviceDetector.GetRazerHidDevices();
+
+            if (hidDevices.Count == 0)
+            {
+                report.AppendLine("No Razer HID interfaces found.");
+            }
+            else
+            {
+                foreach (var device in hidDevices)
+                {
+                    report.AppendLine("HID PATH: " + device);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            report.AppendLine("HID ERROR: " + ex.Message);
+        }
+
+        // ALL RAZER USB INTERFACES
         report.AppendLine();
         report.AppendLine("=== ALL RAZER USB INTERFACES ===");
 
@@ -81,7 +105,10 @@ public static class BatteryDiagnostics
             report.AppendLine("USB ERROR: " + ex.Message);
         }
 
+        // BATTERY STATUS
         report.AppendLine();
+        report.AppendLine("=== BATTERY STATUS ===");
+        report.AppendLine("DEVICE: Razer BlackShark V2 Pro Xbox 2.4");
         report.AppendLine("BATTERY: Not yet detected");
         report.AppendLine("No estimated percentage is displayed.");
 
