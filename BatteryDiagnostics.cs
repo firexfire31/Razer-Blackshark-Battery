@@ -53,6 +53,9 @@ public static class BatteryDiagnostics
         }
 
         report.AppendLine();
+        report.AppendLine();
+        report.AppendLine("=== RAZER HID DEVICES ===");
+        report.AppendLine(DeviceDetector.GetRazerHidDevices());
         report.AppendLine("BATTERY: Not yet detected");
         report.AppendLine("No estimated percentage is displayed.");
 
