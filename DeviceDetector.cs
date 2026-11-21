@@ -1,6 +1,8 @@
 
 using System;
+using System.Collections.Generic;
 using System.Management;
+using System.Text;
 
 namespace RazerBattery;
 
@@ -16,15 +18,10 @@ public static class DeviceDetector
             foreach (ManagementObject device in searcher.Get())
             {
                 string id = device["DeviceID"]?.ToString() ?? "";
-                string name = device["Name"]?.ToString() ?? "";
 
                 if (id.Contains("VID_1532&PID_0A41",
-                    StringComparison.OrdinalIgnoreCase)
-                    || name.Contains("BlackShark V2 Pro Xbox",
                     StringComparison.OrdinalIgnoreCase))
-                {
                     return true;
-                }
             }
         }
         catch
@@ -37,12 +34,12 @@ public static class DeviceDetector
 
     public static string GetRazerHidDevices()
     {
+        var report = new StringBuilder();
+
         try
         {
             using var searcher = new ManagementObjectSearcher(
                 "SELECT * FROM Win32_PnPEntity");
-
-            var result = "";
 
             foreach (ManagementObject device in searcher.Get())
             {
@@ -51,18 +48,21 @@ public static class DeviceDetector
                 if (id.Contains("VID_1532",
                     StringComparison.OrdinalIgnoreCase))
                 {
-                    result += "Name: " + device["Name"] + Environment.NewLine;
-                    result += "ID: " + id + Environment.NewLine;
-                    result += "Status: " + device["Status"] + Environment.NewLine;
-                    result += Environment.NewLine;
+                    report.AppendLine("NAME: " + device["Name"]);
+                    report.AppendLine("CLASS: " + device["PNPClass"]);
+                    report.AppendLine("STATUS: " + device["Status"]);
+                    report.AppendLine("DEVICE ID: " + id);
+                    report.AppendLine("------------------------------");
                 }
             }
-
-            return result.Length > 0 ? result : "Razer cihazı bulunamadı.";
         }
         catch (Exception ex)
         {
             return "HID ERROR: " + ex.Message;
         }
+
+        return report.Length > 0
+            ? report.ToString()
+            : "Razer cihazı bulunamadı.";
     }
 }
